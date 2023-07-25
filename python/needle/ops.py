@@ -124,13 +124,12 @@ class Transpose(TensorOp):
         self.axes = axes
 
     def compute(self, a):
-        shape = list(a.shape)
+        axes = list(range(len(a.shape)))
         if self.axes is None:
-            shape[-1], shape[-2] = shape[-2], shape[-1]
+            axes[-1], axes[-2] = axes[-2], axes[-1]
         else:
-            a0, a1 = self.axes[0] - 1, self.axes[1] - 1
-            shape[a0], shape[a1] = shape[a1], shape[a0]
-        return array_api.transpose(a, shape)
+            axes[self.axes[0]], axes[self.axes[1]] = axes[self.axes[1]], axes[self.axes[0]]
+        return array_api.transpose(a, axes)
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
