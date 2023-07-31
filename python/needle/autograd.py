@@ -388,18 +388,23 @@ def compute_gradient_of_variables(output_tensor, out_grad):
     Store the computed result in the grad field of each Variable.
     """
     # a map from node to a list of gradient contributions from each output node
-    node_to_output_grads_list: Dict[Tensor, List[Tensor]] = {}
+    node_to_output_grads_list = {output_tensor: [out_grad]}
     # Special note on initializing gradient of
     # We are really taking a derivative of the scalar reduce_sum(output_node)
     # instead of the vector output_node. But this is the common case for loss function.
-    node_to_output_grads_list[output_tensor] = [out_grad]
 
     # Traverse graph in reverse topological order given the output_node that we are taking gradient wrt.
     reverse_topo_order = list(reversed(find_topo_sort([output_tensor])))
 
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    for node in reverse_topo_order:
+        print(node_to_output_grads_list[node])
+        node.grad = sum(node_to_output_grads_list[node])
+
+        if node.op is not None:
+            grad_list = node.op.gradient_as_tuple(node.grad, node)
+            for input_node, grad in zip(node.inputs, grad_list):
+                node_to_output_grads_list.setdefault(input_node, list())
+                node_to_output_grads_list[input_node].append(grad)
 
 
 def find_topo_sort(node_list: List[Value]) -> List[Value]:
