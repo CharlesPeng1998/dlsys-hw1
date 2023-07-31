@@ -128,10 +128,8 @@ class Transpose(TensorOp):
             axes[self.axes[0]], axes[self.axes[1]] = axes[self.axes[1]], axes[self.axes[0]]
         return array_api.transpose(a, axes)
 
-    def gradient(self, out_grad, node):
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+    def gradient(self, out_grad: Tensor, node: Tensor):
+        return transpose(out_grad, self.axes)
 
 
 def transpose(a, axes=None):
@@ -145,10 +143,9 @@ class Reshape(TensorOp):
     def compute(self, a):
         return array_api.reshape(a, self.shape)
 
-    def gradient(self, out_grad, node):
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+    def gradient(self, out_grad: Tensor, node: Tensor):
+        x, = node.inputs
+        return reshape(out_grad, x.shape)
 
 
 def reshape(a, shape):
