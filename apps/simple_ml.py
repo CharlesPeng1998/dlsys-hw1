@@ -7,7 +7,7 @@ sys.path.append('python/')
 import needle as ndl
 
 
-def parse_mnist(image_filesname, label_filename):
+def parse_mnist(image_filename, label_filename):
     """ Read an images and labels file in MNIST format.  See this page:
     http://yann.lecun.com/exdb/mnist/ for a description of the file format.
 
@@ -29,30 +29,41 @@ def parse_mnist(image_filesname, label_filename):
                 labels of the examples.  Values should be of type np.int8 and
                 for MNIST will contain the values 0-9.
     """
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    with gzip.open(image_filename, 'rb') as image_file:
+        image_file_content = image_file.read()
+        num_images, = struct.unpack_from(">i", image_file_content, 4)
+        x = np.frombuffer(image_file_content, dtype=np.uint8, offset=16)
+        x_norm = x.reshape(num_images, -1).astype(np.float32) / 255
+
+    with gzip.open(label_filename, 'rb') as label_file:
+        label_file_content = label_file.read()
+        y = np.frombuffer(label_file_content, dtype=np.uint8, offset=8)
+
+    return x_norm, y
 
 
-def softmax_loss(Z, y_one_hot):
+def softmax_loss(z, y_one_hot):
     """ Return softmax loss.  Note that for the purposes of this assignment,
     you don't need to worry about "nicely" scaling the numerical properties
     of the log-sum-exp computation, but can just compute this directly.
 
     Args:
-        Z (ndl.Tensor[np.float32]): 2D Tensor of shape
+        z (ndl.Tensor[np.float32]): 2D Tensor of shape
             (batch_size, num_classes), containing the logit predictions for
             each class.
-        y (ndl.Tensor[np.int8]): 2D Tensor of shape (batch_size, num_classes)
+        y_one_hot (ndl.Tensor[np.int8]): 2D Tensor of shape (batch_size, num_classes)
             containing a 1 at the index of the true label of each example and
             zeros elsewhere.
 
     Returns:
         Average softmax loss over the sample. (ndl.Tensor[np.float32])
     """
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    batch_size = z.shape[0]
+    z0 = ndl.exp(z).sum(1)
+    z1 = ndl.log(z0).sum()
+    z_y = ndl.summation(z * y_one_hot)
+    loss = (z1 - z_y) / batch_size
+    return loss
 
 
 def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
