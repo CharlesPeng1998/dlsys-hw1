@@ -266,15 +266,14 @@ def exp(a):
     return Exp()(a)
 
 
-# TODO
 class ReLU(TensorOp):
     def compute(self, a):
         return array_api.maximum(a, 0)
 
-    def gradient(self, out_grad, node):
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+    def gradient(self, out_grad: Tensor, node: Tensor):
+        x, = node.inputs
+        cached_data = x.cached_data
+        return out_grad * Tensor((cached_data > 0).astype(array_api.float32))
 
 
 def relu(a):

@@ -66,10 +66,10 @@ def softmax_loss(z, y_one_hot):
     return loss
 
 
-def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
+def nn_epoch(x, y, w1, w2, lr = 0.1, batch=100):
     """ Run a single epoch of SGD for a two-layer neural network defined by the
     weights W1 and W2 (with no bias terms):
-        logits = ReLU(X * W1) * W1
+        logits = ReLU(X * W1) * W2
     The function should use the step size lr, and the specified batch size (and
     again, without randomizing the order of X).
 
@@ -77,9 +77,9 @@ def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
         X (np.ndarray[np.float32]): 2D input array of size
             (num_examples x input_dim).
         y (np.ndarray[np.uint8]): 1D class label array of size (num_examples,)
-        W1 (ndl.Tensor[np.float32]): 2D array of first layer weights, of shape
+        w1 (ndl.Tensor[np.float32]): 2D array of first layer weights, of shape
             (input_dim, hidden_dim)
-        W2 (ndl.Tensor[np.float32]): 2D array of second layer weights, of shape
+        w2 (ndl.Tensor[np.float32]): 2D array of second layer weights, of shape
             (hidden_dim, num_classes)
         lr (float): step size (learning rate) for SGD
         batch (int): size of SGD mini-batch
@@ -89,11 +89,24 @@ def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
             W1: ndl.Tensor[np.float32]
             W2: ndl.Tensor[np.float32]
     """
+    num_examples = x.shape[0]
+    num_classes = w2.shape[1]
 
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    for i in range(0, num_examples, batch):
+        x_batch = x[i: i + batch]
+        y_batch = y[i: i + batch]
 
+        x_tensor = ndl.Tensor(x_batch)
+        z = ndl.relu(x_tensor @ w1) @ w2
+        y_one_hot = ndl.Tensor(np.eye(num_classes)[y_batch])
+        loss = softmax_loss(z, y_one_hot)
+
+        loss.backward()
+
+        w1 = ndl.Tensor(w1.numpy() - lr * w1.grad.numpy())
+        w2 = ndl.Tensor(w2.numpy() - lr * w2.grad.numpy())
+
+    return w1, w2
 
 ### CODE BELOW IS FOR ILLUSTRATION, YOU DO NOT NEED TO EDIT
 
